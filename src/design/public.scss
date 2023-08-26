@@ -1,0 +1,17 @@
+//全局公共样式
+
+@font-face {
+  font-family:"base";
+  src: url("./font/SourceHanSansCN-Normal.otf");
+}
+
+@font-face{
+  font-family: "pm";
+  src: url("./font/pm.ttf");
+}
+
+
+*{
+  font-family: "base";
+  color: $white;
+}

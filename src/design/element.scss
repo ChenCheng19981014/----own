@@ -1,0 +1,17 @@
+.el-pagination{
+    background: none;
+    button{
+        background: none!important;
+    }
+    li{
+        background: none!important;
+        font-size: 14px;
+        &:hover{
+            color:#ADCEFF!important;
+        }
+    }
+    .active{
+        color:#ADCEFF!important;
+    }
+
+}
