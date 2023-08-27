@@ -193,6 +193,7 @@ const setArea = (id) => {
 const setProductLine = (id) => {
   selectProductLine.value = id;
   bus.$emit("scene-setProductLine", id);
+
   // console.log("前端选中的产线:", id);
 };
 

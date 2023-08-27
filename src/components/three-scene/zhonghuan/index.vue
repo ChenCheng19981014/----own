@@ -1,7 +1,7 @@
 <template>
   <div
-    class="three-scene-zhonghuan"
-    ref="three-scene-zhonghuan"
+    class="three-scene-tongli"
+    ref="three-scene-tongli"
     onselectstart="return false;"
   >
     <!-- <Load v-show="!loadingEnd"></Load> -->
@@ -13,6 +13,15 @@
       "
       class="btn"
     ></div>
+
+    <div
+      v-show="loadingEnd"
+      :class="`lineInfo ` + `lineInfo_${item} `"
+      v-for="(item, index) in lineArray"
+      :key="index + item"
+    >
+      <div>{{ lineChinseseMap[item] }}</div>
+    </div>
   </div>
 </template>
 
@@ -28,6 +37,7 @@ import { fn } from "./Change";
 // import bus from "../../../utils/bus.js";
 import bus from "../../../lib/bus";
 import Load from "./../components/load";
+import { webLineDomMap, lineArray, lineChinseseMap } from "./const";
 const { RunScene, Utils } = Engine;
 export default {
   name: "zhongHuan",
@@ -36,6 +46,9 @@ export default {
   },
   data() {
     return {
+      webLineDomMap: webLineDomMap,
+      lineArray: lineArray,
+      lineChinseseMap: lineChinseseMap,
       loadingEnd: false,
       path:
         // "http://192.168.3.8:8080/file?path=project/linkpoint/&key=202308221436074679711001202353",
@@ -100,7 +113,7 @@ export default {
         },
       }).load({
         path: path,
-        dom: this.$refs["three-scene-zhonghuan"],
+        dom: this.$refs["three-scene-tongli"],
       });
 
       return scene;
@@ -164,27 +177,37 @@ export default {
 
 <style lang="scss" scoped>
 // 场景
-.three-scene-zhonghuan {
+.three-scene-tongli {
   width: 100%;
   height: 100%;
   position: relative;
   pointer-events: auto;
 }
 
-.three-scene-zhonghuan .btn {
+.three-scene-tongli .btn {
   position: absolute;
   z-index: 3;
 }
 
-.three-scene-zhonghuan .show {
+.three-scene-tongli .lineInfo {
+  width: 20px;
+  height: 20px;
+  z-index: 3000000;
+  background-color: pink;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.three-scene-tongli .show {
   opacity: 1 !important;
 }
 
-.three-scene-zhonghuan .block {
+.three-scene-tongli .block {
   display: block !important;
 }
 
-.three-scene-zhonghuan .none {
+.three-scene-tongli .none {
   display: none;
 }
 

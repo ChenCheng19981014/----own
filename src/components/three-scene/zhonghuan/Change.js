@@ -5,8 +5,10 @@
 // import bus from "../../../utils/bus.js";
 import bus from "../../../lib/bus";
 import * as THREE from "three";
+import { webLineDomMap, lineArray } from './const'
 let Bus = bus;
 const fn = (runScene, inputData = {}, constant = {}) => {
+
   const fn = (map) => {
     const {
       runScene,
@@ -43,7 +45,8 @@ const fn = (runScene, inputData = {}, constant = {}) => {
       }
 
       // 初始化
-      init() { }
+      init() {
+      }
 
       // 蓝图功能
       blueprintFn(name) {
@@ -272,7 +275,10 @@ const fn = (runScene, inputData = {}, constant = {}) => {
         // 更新选中产线
         this.selectProductLine = lineName;
         // 3d场景 选中产线的事件
-        this.setProductLine(lineName)
+        this.setProductLine(lineName);
+
+        // 选中后展示对应的 产线dom
+        core.domSprite.showCurrentLineSprite(lineName)
       }
 
       // 获取模型
@@ -303,10 +309,15 @@ const fn = (runScene, inputData = {}, constant = {}) => {
         this.spriteBackToUp(level);
         // 边框
         core.border.borderBackToUp(level);
+        // 2d转dom
+        core.domSprite.domSpriteFn(level);
       }
 
       // 前端选中的  区域
       setArea(area) {
+        // 选中区域之前清空之前显示的产线dom
+        core.domSprite.showAllLineSprite(false);
+        // 更新选中的区域
         this.selectArea = area;
         // 隐藏对应的区域标牌
         core.sprite.showOneSprite(area);
@@ -314,6 +325,7 @@ const fn = (runScene, inputData = {}, constant = {}) => {
         core.camera.cameraAnima(area);
         // 显示对应的边框
         core.border.showBorder(area);
+
       }
 
       // 前端选中的  产线
@@ -323,6 +335,9 @@ const fn = (runScene, inputData = {}, constant = {}) => {
         core.camera.cameraAnima(line);
         // 显示对应的边框
         core.border.showBorder(line);
+
+        // 显示对应产线的看板信息
+        core.domSprite.showCurrentLineSprite(line)
       }
 
       // 视角返回
@@ -390,9 +405,109 @@ const fn = (runScene, inputData = {}, constant = {}) => {
     // 添加的2dDom
     class DomSprite {
       name = 'domSprite';
+      // 产线模型表
+      lineModelMap = {}
+
       mounted() {
+        // 初始化
+        // this.init()
+
+        // 获取模型表
+        this.getModel()
+
+        // 添加2d dom
+        this.addDom();
+
+        // 默认关闭显示的看板
+        this.showAllLineSprite(false)
+
+        console.log(this.lineModelMap, 'this.lineModelMap');
+      }
+
+      // 初始化
+      init() {
+        let a = {}
+        let b = {}
+        let c = []
+        getModel('points').children.forEach((p) => {
+          const name = p.name;
+          a[name] = {}
+          b[name] = []
+          p?.children.forEach((s) => {
+            const name = s.name
+            a[p.name][s.name] = { name }
+            b[p.name].push(name)
+            c.push(name)
+          })
+        })
+        // console.log(a, 'aaa');
+        // console.log(JSON.stringify(b), 'bbb');
+        console.log(JSON.stringify(c), 'cc');
+      }
+
+      // 获取模型表
+      getModel() {
+        getModel('points').children.forEach((parent) => {
+          const name = parent.name;
+          this.lineModelMap[name] = {}
+        })
+      }
+
+      // 添加dom
+      addDom() {
+        lineArray.map(async (lineName) => {
+          const num = lineName.indexOf('_');
+          const lineNum = lineName.substring(0, num);
+          const dom = document.querySelector(`.lineInfo_${lineName}`);
+          const m = getModel(lineName);
+          if (!dom || !m) return;
+          let sprite = Utils.domTo2Dui(dom);
+          sprite.name = `${lineName}_sprite`;
+          m.add(sprite);
+
+          // 将dom模型放入到对应的表里
+          Object.keys(this.lineModelMap).map((linePoint) => {
+            if (linePoint.includes(lineNum)) {
+              this.lineModelMap[linePoint][lineName] = sprite
+            }
+          })
+
+        });
+      }
+
+      // 显示对应的产线看板
+      showCurrentLineSprite(lineName) {
+        const EnglishName = lineName.replace('产线', 'HW')
+        Object.keys(this.lineModelMap).map((everyLine) => {
+          const allLineModel = this.lineModelMap[everyLine]
+          // 只显示选中对应产线的dom
+          if (everyLine.includes(EnglishName)) {
+            Object.values(allLineModel).map((m) => {
+              m.visible = true
+            })
+          } else {
+            Object.values(allLineModel).map((m) => m.visible = false)
+          }
+        })
+      }
+
+      // 关闭 开启 所有 对应的产线看板
+      showAllLineSprite(isShow = false) {
+        Object.keys(this.lineModelMap).map((everyLine) => {
+          const allLineModel = this.lineModelMap[everyLine]
+          Object.values(allLineModel).map((m) => m.visible = isShow)
+        })
+      }
+
+      // 切换 层级发生的事情
+      domSpriteFn(level) {
+        // 第一层和第二层都是隐藏的
+        if (level === 1 || level === 2) {
+          this.showAllLineSprite(false);
+        }
 
       }
+
     }
 
     // 相机视角
@@ -559,7 +674,6 @@ const fn = (runScene, inputData = {}, constant = {}) => {
 
     return [Events, SnapShotFn, InitScene, Camera, Sprite, Border, DomSprite];
   };
-
 
   const modules = fn({
     runScene,
